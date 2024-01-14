@@ -40,8 +40,11 @@ def render_home_page():
     date = st.date_input("Date", value=datetime.today())
     date_str = date.strftime("%Y-%m-%d")
 
-    # Text area for the diary content
-    content = st.text_area("Content", height=300)
+    content = st.text_area("Content", value=st.session_state.get('diary_entries', {}).get(date_str, ''), key=date_str, height=300)
+    # if date_str in st.session_state.diary_entries:
+    #     st.session_state[date_str] = st.session_state.diary_entries[date_str]
+    # else:
+    #     content = st.text_area("Content", height=300)
 
     # Button to save the diary entry
     if st.button("Save Entry"):
