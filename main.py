@@ -28,12 +28,7 @@ def initialize_session():
             if saved is not None:
                 st.session_state.diary_entries = saved
 
-# Navigate to the home page
-def go_to_home():
-    st.session_state.selected_entry = None
-    st.rerun()
-
-def render_home_page():
+def render_edit_page():
     st.title("New Diary Entry")
 
     # Date input for the diary entry
@@ -41,41 +36,39 @@ def render_home_page():
     date_str = date.strftime("%Y-%m-%d")
 
     content = st.text_area("Content", value=st.session_state.get('diary_entries', {}).get(date_str, ''), key=date_str, height=300)
-    # if date_str in st.session_state.diary_entries:
-    #     st.session_state[date_str] = st.session_state.diary_entries[date_str]
-    # else:
-    #     content = st.text_area("Content", height=300)
 
     # Button to save the diary entry
     if st.button("Save Entry"):
         st.session_state.diary_entries[date_str] = content
         set_to_local_storage(TOOL_NAME, st.session_state.diary_entries)
-        go_to_home()
+        go_to_edit_page()
 
-def render_diary_page(date_str):
-    st.title(f"Diary Entry for {date_str}")
-    st.write(st.session_state.diary_entries[date_str])
-
+def render_diary_page():
+    st.title("Diary Entries")
+    for date_str, entry in sorted(st.session_state.diary_entries.items(), reverse=True):
+        st.subheader(date_str)
+        st.write(entry)
 def render_sidebar():
-    # Sidebar layout for listing entries and navigating to the home page
+    if st.sidebar.button("Diary Entries"):
+        go_to_diary_page()
     if st.sidebar.button("Write New Entry"):
-        go_to_home()
-    st.sidebar.header("Diary Entries")
+        go_to_edit_page()
 
-    if 'diary_entries' in st.session_state:
-        sorted_dates = sorted(st.session_state.diary_entries.keys(), reverse=True)
-        for date_str in sorted_dates:
-            if st.sidebar.button(f"View {date_str}"):
-                st.session_state.selected_entry = date_str
+def go_to_edit_page():
+    st.session_state.edit_diary = True
+    st.rerun()
+
+def go_to_diary_page():
+    st.session_state.edit_diary = False
+    st.rerun()
 
 def main():
     initialize_session()
     render_sidebar()
-    selected_entry = st.session_state.get('selected_entry')
-    if selected_entry:
-        render_diary_page(selected_entry)
+    if st.session_state.get('edit_diary'):
+        render_edit_page()
     else:
-        render_home_page()
+        render_diary_page()
     st.write(st.session_state)
 
 main()
